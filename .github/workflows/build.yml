@@ -1,0 +1,46 @@
+name: Build Clipboard Cleaner
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Cache MinGW
+      id: cache-mingw
+      uses: actions/cache@v4
+      with:
+        path: C:\ProgramData\chocolatey\lib\mingw
+        key: mingw-cache-v1
+
+    - name: Install MinGW (if not cached)
+      if: steps.cache-mingw.outputs.cache-hit != 'true'
+      run: |
+        choco install mingw -y
+        echo "C:\Program Files\mingw-w64\mingw64\bin" >> $GITHUB_PATH
+
+    - name: Compile Resource File
+      run: windres resource.rc -O coff -o resource.o
+
+    - name: Compile Executable
+      run: g++ clipCleaner.cpp resource.o -o ClipCleaner.exe -mwindows -O2 -pipe -fno-ident -s -flto
+
+    - name: Upload Compiled EXE
+      uses: actions/upload-artifact@v4
+      with:
+        name: ClipboardCleaner
+        path: clipCleaner.exe
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: clipCleaner.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
