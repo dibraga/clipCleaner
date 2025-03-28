@@ -67,6 +67,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     
     SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)&nid);
     
+    SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)nid.hIcon);
+    SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)nid.hIcon);
+    
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
